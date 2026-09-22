@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="AI Medical Report Summarizer helps healthcare teams organize patient records, analyze medical reports, and receive AI-powered guidance in one secure dashboard."
+    />
+    <title>AI Medical Report Summarizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- ════════ HEADER ════════ -->
+    <header class="header" id="top">
+      <div class="container nav-container">
+        <div class="brand-wrap">
+          <div class="brand-mark">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="brand-text">AI Medical Report</div>
+        </div>
+
+        <nav class="nav" id="mainNav">
+          <a href="#hero">Home</a>
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#security">Security</a>
+          <a href="#contact">Contact</a>
+        </nav>
+
+        <div class="nav-actions">
+          <a href="login.html" class="btn btn-ghost">Login</a>
+          <a href="signup.html" class="btn btn-primary">Sign up</a>
+          <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ════════ SECTION 1: HERO with IMAGE 1 ════════ -->
+      <section class="hero" id="hero">
+        <!-- ═══ FULL BACKGROUND IMAGE with animation ═══ -->
+        <div class="hero-bg-image" aria-hidden="true">
+          <img src="slide-1.jpg" alt="" class="hero-bg-img" loading="eager" />
+          <div class="hero-bg-overlay"></div>
+        </div>
+
+        <!-- Animated particles & orbs on top of image -->
+        <div class="hero-bg-effects" aria-hidden="true">
+          <div class="floating-orb orb-1"></div>
+          <div class="floating-orb orb-2"></div>
+          <div class="floating-orb orb-3"></div>
+          <div class="grid-lines"></div>
+          <!-- Particles -->
+          <span class="particle p1"></span>
+          <span class="particle p2"></span>
+          <span class="particle p3"></span>
+          <span class="particle p4"></span>
+          <span class="particle p5"></span>
+          <span class="particle p6"></span>
+          <span class="particle p7"></span>
+          <span class="particle p8"></span>
+        </div>
+
+        <div class="container hero-content-wrap">
+          <div class="hero-copy" id="heroCopy">
+            <span class="eyebrow eyebrow-animated">
+              <span class="eyebrow-dot"></span>
+              Smart Healthcare Intelligence
+            </span>
+            <h1>Turn complex medical data into <span class="gradient-text">clear, actionable</span> insights.</h1>
+            <p>
+              Manage patient records, summarize reports in seconds, and guide care decisions with AI-powered clinical support built for modern healthcare teams.
+            </p>
+
+            <div class="hero-actions">
+              <a href="signup.html" class="btn btn-primary btn-glow">
+                <span>Start Free Demo</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </a>
+              <a href="#features" class="btn btn-glass">
+                <span>See Platform</span>
+              </a>
+            </div>
+
+            <div class="hero-trust">
+              <div class="trust-item">
+                <strong data-count="24">0</strong>
+                <span>K+ Reports</span>
+              </div>
+              <div class="trust-divider"></div>
+              <div class="trust-item">
+                <strong>98%</strong>
+                <span>Faster</span>
+              </div>
+              <div class="trust-divider"></div>
+              <div class="trust-item">
+                <strong>24/7</strong>
+                <span>AI Active</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating cards overlay on the background image -->
+          <div class="hero-floating-elements" id="heroVisual">
+            <div class="hero-glow-ring ring-1" aria-hidden="true"></div>
+            <div class="hero-glow-ring ring-2" aria-hidden="true"></div>
+            <div class="hero-glow-ring ring-3" aria-hidden="true"></div>
+
+            <div class="hero-float-card float-dna">
+              <div class="float-icon">🧬</div>
+              <div class="float-info">
+                <span class="float-label">Analysis</span>
+                <strong>DNA Sequencing</strong>
+              </div>
+              <div class="float-pulse"></div>
+            </div>
+
+            <div class="hero-float-card float-heartbeat">
+              <div class="float-icon">💊</div>
+              <div class="float-info">
+                <span class="float-label">AI Model</span>
+                <strong>Active</strong>
+              </div>
+              <svg class="heartbeat-svg" viewBox="0 0 100 30">
+                <polyline class="heartbeat-line" points="0,15 20,15 25,5 30,25 35,10 40,15 55,15 60,5 65,25 70,15 100,15"/>
+              </svg>
+            </div>
+
+            <div class="hero-float-card float-stats">
+              <div class="float-icon">📊</div>
+              <div class="float-info">
+                <span class="float-label">Reports</span>
+                <strong>+2,847 today</strong>
+              </div>
+              <div class="mini-bar-chart">
+                <span style="height:40%"></span>
+                <span style="height:65%"></span>
+                <span style="height:50%"></span>
+                <span style="height:85%"></span>
+                <span style="height:70%"></span>
+              </div>
+            </div>
+
+            <div class="hero-float-card float-scan">
+              <div class="scan-ring"><div class="scan-dot"></div></div>
+              <span class="scan-text">Scanning...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="scroll-indicator" aria-hidden="true">
+          <div class="scroll-mouse">
+            <div class="scroll-wheel"></div>
+          </div>
+          <span>Scroll to explore</span>
+        </div>
+      </section>
+
+      <!-- ════════ LOGO STRIP ════════ -->
+      <section class="logo-strip">
+        <div class="container trust-row">
+          <span>CarePulse</span>
+          <span>NovaCare</span>
+          <span>HealthGrid</span>
+          <span>VitalsOne</span>
+          <span>MedAxis</span>
+        </div>
+      </section>
+
+      <!-- ════════ SECTION 2: FEATURES with IMAGE 2 ════════ -->
+      <section class="features-showcase" id="features">
+        <div class="container">
+          <div class="section-head centered reveal-up">
+            <span class="eyebrow">Platform Features</span>
+            <h2>Everything your healthcare dashboard needs.</h2>
+            <p class="section-subtitle">Powerful AI tools designed for modern medical professionals</p>
+          </div>
+
+          <div class="features-split reveal-up">
+            <!-- Image 2 - Features section -->
+            <div class="features-image-wrap">
+              <div class="features-image-bg-glow" aria-hidden="true"></div>
+              <div class="features-img-container">
+                <img src="slide-2.jpg" alt="Research and development with biochemistry analysis" class="features-img" loading="lazy" />
+                <div class="features-img-overlay"></div>
+              </div>
+              <!-- Floating badges on the image -->
+              <div class="feature-badge badge-1">
+                <span class="badge-icon">🧠</span>
+                <span class="badge-text">AI Powered</span>
+              </div>
+              <div class="feature-badge badge-2">
+                <span class="badge-icon">⚡</span>
+                <span class="badge-text">Real-time</span>
+              </div>
+              <div class="feature-badge badge-3">
+                <span class="badge-icon">🔬</span>
+                <span class="badge-text">98% Accuracy</span>
+              </div>
+            </div>
+
+            <!-- Feature cards -->
+            <div class="features-cards">
+              <article class="feature-card reveal-right" style="--delay:0.1s">
+                <div class="icon-box icon-blue">📋</div>
+                <div>
+                  <h3>Patient Dashboard</h3>
+                  <p>Create and manage patient profiles from one centralized view with medical details, visits, and history.</p>
+                </div>
+              </article>
+
+              <article class="feature-card reveal-right" style="--delay:0.2s">
+                <div class="icon-box icon-teal">🧠</div>
+                <div>
+                  <h3>AI Report Summaries</h3>
+                  <p>Instantly transform long, complex lab reports and clinical notes into clear summaries for faster review.</p>
+                </div>
+              </article>
+
+              <article class="feature-card reveal-right" style="--delay:0.3s">
+                <div class="icon-box icon-purple">🩺</div>
+                <div>
+                  <h3>Clinical Guidance</h3>
+                  <p>Receive AI-supported recommendations, risk alerts, and suggested follow-up actions based on patient data.</p>
+                </div>
+              </article>
+
+              <article class="feature-card reveal-right" style="--delay:0.4s">
+                <div class="icon-box icon-green">🔒</div>
+                <div>
+                  <h3>Secure Patient Storage</h3>
+                  <p>Store medical reports safely with a structured system designed for privacy, access control, and reliability.</p>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════ STATS SECTION ════════ -->
+      <section class="stats-section" id="platform">
+        <div class="container stats-grid">
+          <div class="stat-box reveal-up" style="--delay:0s">
+            <strong class="count" data-target="35">0</strong>
+            <span>% faster documentation</span>
+          </div>
+          <div class="stat-box reveal-up" style="--delay:0.1s">
+            <strong class="count" data-target="12">0</strong>
+            <span>K patient profiles</span>
+          </div>
+          <div class="stat-box reveal-up" style="--delay:0.2s">
+            <strong class="count" data-target="99">0</strong>
+            <span>% secure access control</span>
+          </div>
+          <div class="stat-box reveal-up" style="--delay:0.3s">
+            <strong class="count" data-target="24">0</strong>
+            <span>/7 AI clinical support</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════ HOW IT WORKS ════════ -->
+      <section class="workflow" id="how-it-works">
+        <div class="container">
+          <div class="section-head centered reveal-up">
+            <span class="eyebrow">How it works</span>
+            <h2>From report upload to AI-guided action</h2>
+          </div>
+
+          <div class="workflow-grid">
+            <div class="workflow-step reveal-up" style="--delay:0s">
+              <span class="step-number">
+                <span class="step-num-text">01</span>
+                <svg class="step-ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45"/></svg>
+              </span>
+              <h3>Create Patient Record</h3>
+              <p>Add patient demographics, history, and all the medical information your team needs in one place.</p>
+            </div>
+            <div class="workflow-connector" aria-hidden="true">
+              <div class="connector-line"></div>
+              <div class="connector-dot"></div>
+            </div>
+            <div class="workflow-step reveal-up" style="--delay:0.15s">
+              <span class="step-number">
+                <span class="step-num-text">02</span>
+                <svg class="step-ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45"/></svg>
+              </span>
+              <h3>Upload Medical Reports</h3>
+              <p>Store documents, labs, scans, and notes in a clean and searchable healthcare dashboard.</p>
+            </div>
+            <div class="workflow-connector" aria-hidden="true">
+              <div class="connector-line"></div>
+              <div class="connector-dot"></div>
+            </div>
+            <div class="workflow-step reveal-up" style="--delay:0.3s">
+              <span class="step-number">
+                <span class="step-num-text">03</span>
+                <svg class="step-ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45"/></svg>
+              </span>
+              <h3>AI Summary &amp; Guidance</h3>
+              <p>Get concise summaries and clinical recommendations that help you understand next steps clearly.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════ SECTION 3: SECURITY with IMAGE 3 ════════ -->
+      <section class="security" id="security">
+        <div class="security-bg" aria-hidden="true">
+          <img src="slide-3.jpg" alt="" class="security-bg-img" loading="lazy" />
+          <div class="security-bg-overlay"></div>
+          <div class="security-particles">
+            <span class="sec-particle sp1"></span>
+            <span class="sec-particle sp2"></span>
+            <span class="sec-particle sp3"></span>
+            <span class="sec-particle sp4"></span>
+            <span class="sec-particle sp5"></span>
+            <span class="sec-particle sp6"></span>
+            <span class="sec-particle sp7"></span>
+            <span class="sec-particle sp8"></span>
+          </div>
+        </div>
+
+        <div class="container security-content">
+          <div class="security-grid">
+            <div class="security-copy reveal-up">
+              <span class="eyebrow eyebrow-light">Built for trust</span>
+              <h2>Secure healthcare workflows from report intake to patient follow-up.</h2>
+              <ul>
+                <li>
+                  <div class="check-circle">✓</div>
+                  <div>
+                    <strong>Protected Access</strong>
+                    <p>End-to-end encrypted patient records with multi-factor authentication.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="check-circle">✓</div>
+                  <div>
+                    <strong>Role-Based Permissions</strong>
+                    <p>Granular access control for staff, clinicians, and administrators.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="check-circle">✓</div>
+                  <div>
+                    <strong>Organized Storage</strong>
+                    <p>Structured storage system for long-term patient history and records.</p>
+                  </div>
+                </li>
+                <li>
+                  <div class="check-circle">✓</div>
+                  <div>
+                    <strong>AI with Human Oversight</strong>
+                    <p>AI-powered insights always verified with clinical oversight protocols.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="security-panel reveal-right">
+              <div class="panel-glow" aria-hidden="true"></div>
+              <div class="panel-header">
+                <div>
+                  <span>Compliance overview</span>
+                  <strong>HIPAA-ready</strong>
+                </div>
+                <div class="status-dot">
+                  <span class="status-pulse"></span>
+                  Active
+                </div>
+              </div>
+              <div class="panel-list">
+                <div class="panel-item">
+                  <div class="panel-item-left">
+                    <div class="panel-item-icon">🛡️</div>
+                    <span>Access Control</span>
+                  </div>
+                  <strong class="panel-value">100%</strong>
+                </div>
+                <div class="panel-item">
+                  <div class="panel-item-left">
+                    <div class="panel-item-icon">📝</div>
+                    <span>Audit Trail</span>
+                  </div>
+                  <strong class="panel-value accent">Enabled</strong>
+                </div>
+                <div class="panel-item">
+                  <div class="panel-item-left">
+                    <div class="panel-item-icon">🔐</div>
+                    <span>Encryption</span>
+                  </div>
+                  <strong class="panel-value">256-bit</strong>
+                </div>
+                <div class="panel-item">
+                  <div class="panel-item-left">
+                    <div class="panel-item-icon">🌐</div>
+                    <span>Uptime</span>
+                  </div>
+                  <strong class="panel-value accent">99.99%</strong>
+                </div>
+              </div>
+              <div class="panel-footer">
+                <div class="panel-bar">
+                  <div class="panel-bar-fill"></div>
+                </div>
+                <span>Security Score: <strong>Excellent</strong></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════ CTA ════════ -->
+      <section class="cta" id="contact">
+        <div class="container">
+          <div class="cta-box reveal-up">
+            <div class="cta-bg-effects" aria-hidden="true">
+              <div class="cta-orb cta-orb-1"></div>
+              <div class="cta-orb cta-orb-2"></div>
+            </div>
+            <div class="cta-content">
+              <span class="eyebrow eyebrow-light">Ready to transform patient care?</span>
+              <h2>Build a smarter medical reporting workflow with AI.</h2>
+              <p>Join thousands of healthcare professionals already using AI Medical Report Summarizer.</p>
+            </div>
+            <div class="cta-actions">
+              <a href="signup.html" class="btn btn-white btn-glow">
+                <span>Book a Demo</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </a>
+              <a href="#features" class="btn btn-outline-white">Learn More</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ════════ FOOTER ════════ -->
+    <footer class="footer">
+      <div class="container footer-inner">
+        <div class="footer-brand">
+          <div class="brand-wrap">
+            <div class="brand-mark">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <div class="brand-text">AI Medical Report</div>
+          </div>
+          <p class="footer-desc">Empowering healthcare with intelligent medical report analysis.</p>
+        </div>
+        <div class="footer-links">
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#security">Security</a>
+          <a href="#contact">Contact</a>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; <span id="year"></span> AI Medical Report Summarizer. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

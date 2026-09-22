@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up | AI Medical Report Summarizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body>
+    <main class="auth-page">
+      <div class="auth-shell">
+        <section class="auth-visual">
+          <div class="brand-wrap">
+            <div class="brand-mark">AI</div>
+            <div class="brand-text">Medical Report Summarizer</div>
+          </div>
+
+          <h1>Create your medical AI workspace.</h1>
+          <p>
+            Start organizing patient data, uploading medical reports, and getting AI-powered recommendations for better care planning.
+          </p>
+
+          <ul class="auth-points">
+            <li>Set up patient profiles quickly</li>
+            <li>Store health records securely</li>
+            <li>Summarize reports with AI</li>
+          </ul>
+        </section>
+
+        <section class="auth-form-wrap">
+          <form class="auth-form">
+            <div class="auth-top">
+              <h2>Sign up</h2>
+              <a class="auth-link" href="login.html">Login</a>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-row">
+                <div class="input-group">
+                  <label for="first-name">First name</label>
+                  <input id="first-name" type="text" placeholder="John" />
+                </div>
+
+                <div class="input-group">
+                  <label for="last-name">Last name</label>
+                  <input id="last-name" type="text" placeholder="Doe" />
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label for="signup-email">Work email</label>
+                <input id="signup-email" type="email" placeholder="you@clinic.com" />
+              </div>
+
+              <div class="input-group">
+                <label for="signup-password">Password</label>
+                <input id="signup-password" type="password" placeholder="Create a strong password" />
+              </div>
+
+              <div class="form-options">
+                <label class="check-wrap">
+                  <input type="checkbox" />
+                  <span>I agree to the terms</span>
+                </label>
+              </div>
+
+              <button type="submit" class="btn btn-primary auth-btn">Create account</button>
+            </div>
+
+            <div class="auth-divider"><span>or sign up with</span></div>
+
+            <div class="social-btns">
+              <button type="button">Google</button>
+              <button type="button">LinkedIn</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="firebase.js"></script>
+    <script src="script.js"></script>
+    <script src="auth.js"></script>
+  </body>
+</html>

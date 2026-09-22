@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Medical Intelligence Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+  <body>
+    <div class="dashboard-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <div class="brand-mark">AI</div>
+          <div>
+            <div class="brand-name">Medical AI</div>
+            <small>Clinical Suite</small>
+          </div>
+        </div>
+
+        <nav class="side-nav">
+          <a href="#" class="active">
+            <span class="nav-icon">⌂</span>
+            Overview
+          </a>
+          <a href="#">
+            <span class="nav-icon">🩺</span>
+            Patients
+          </a>
+          <a href="#">
+            <span class="nav-icon">📄</span>
+            Reports
+          </a>
+          <a href="#" id="navAIAssistant">
+            <span class="nav-icon">🤖</span>
+            AI Assistant
+          </a>
+          <a href="#">
+            <span class="nav-icon">⚙</span>
+            Settings
+          </a>
+        </nav>
+
+        <div class="sidebar-card">
+          <p>Clinical AI</p>
+          <strong>24/7 Ready</strong>
+          <span>Review report insights instantly</span>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <h1>Medical Intelligence Dashboard</h1>
+          </div>
+
+          <div class="topbar-actions">
+            <button class="ghost-btn" id="clearAllBtn">Clear All</button>
+          </div>
+        </header>
+
+        <section class="overview-grid">
+          <article class="glass-card accent">
+            <div class="card-head">
+              <span class="label">Active Patients</span>
+              <span class="trend positive">+12.5%</span>
+            </div>
+            <div class="stat-row">
+              <strong>1,248</strong>
+              <span>Across 9 departments</span>
+            </div>
+          </article>
+
+          <article class="glass-card">
+            <div class="card-head">
+              <span class="label">Reports Reviewed</span>
+              <span class="trend positive">+34%</span>
+            </div>
+            <div class="stat-row">
+              <strong>786</strong>
+              <span>Today with AI support</span>
+            </div>
+          </article>
+
+          <article class="glass-card">
+            <div class="card-head">
+              <span class="label">AI Confidence</span>
+              <span class="trend neutral">96.2%</span>
+            </div>
+            <div class="stat-row">
+              <strong>High</strong>
+              <span>Clinical summary precision</span>
+            </div>
+          </article>
+        </section>
+
+        <!-- ═══ API Key Warning Banner ═══ -->
+        <div class="api-key-banner" id="apiKeyBanner">
+          <div class="banner-icon">🔑</div>
+          <div class="banner-content">
+            <strong>Gemini API Key Required</strong>
+            <p>Open <code>ai-service.js</code> and paste your free API key from <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a></p>
+          </div>
+          <button class="banner-close" id="closeBanner" type="button">✕</button>
+        </div>
+
+        <section class="content-grid">
+          <div class="left-column">
+            <!-- ═══ Upload Panel ═══ -->
+            <article class="panel upload-panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Clinical workspace</p>
+                  <h2>Upload Medical Report</h2>
+                </div>
+                <button class="action-btn" id="analyzeBtn" disabled>
+                  <span class="btn-icon">✦</span>
+                  Analyze with AI
+                </button>
+              </div>
+
+              <label class="upload-box" for="reportInput" id="uploadBox">
+                <input id="reportInput" type="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.txt,.webp" />
+                <div class="upload-icon">⇪</div>
+                <h3>Drop report here or browse files</h3>
+                <p>PDF, images, text, and medical documents supported</p>
+              </label>
+
+              <div class="uploaded-file" id="uploadedFile">
+                <!-- File info will appear here -->
+              </div>
+            </article>
+
+            <!-- ═══ Summary Panel ═══ -->
+            <article class="panel summary-panel" id="summaryPanel">
+              <div class="panel-header small-gap">
+                <div>
+                  <p class="eyebrow">AI analysis</p>
+                  <h2>Clinical Summary</h2>
+                </div>
+                <div class="summary-actions">
+                  <button class="mini-btn" id="regenerateBtn" style="display:none">
+                    ↻ Regenerate
+                  </button>
+                  <button class="mini-btn outline" id="copySummaryBtn" style="display:none">
+                    📋 Copy
+                  </button>
+                </div>
+              </div>
+
+              <!-- Empty state -->
+              <div class="summary-empty" id="summaryEmpty">
+                <div class="empty-icon">📄</div>
+                <h3>No report analyzed yet</h3>
+                <p>Upload a medical report above and click "Analyze with AI" to generate an intelligent summary.</p>
+              </div>
+
+              <!-- Loading state -->
+              <div class="summary-loading" id="summaryLoading" style="display:none">
+                <div class="ai-spinner">
+                  <div class="spinner-ring"></div>
+                  <div class="spinner-icon">✦</div>
+                </div>
+                <h3>Analyzing report...</h3>
+                <p class="loading-sub" id="loadingText">AI is reading and understanding your medical report</p>
+                <div class="loading-bar">
+                  <div class="loading-bar-fill" id="loadingBarFill"></div>
+                </div>
+              </div>
+
+              <!-- Summary content -->
+              <div class="summary-content" id="summaryBox" style="display:none"></div>
+
+              <!-- Error state -->
+              <div class="summary-error" id="summaryError" style="display:none">
+                <div class="error-icon">⚠️</div>
+                <h3>Analysis Failed</h3>
+                <p id="errorMessage">Something went wrong. Please try again.</p>
+                <button class="mini-btn" id="retryBtn">Try Again</button>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- ═══ Chat Launcher ═══ -->
+    <button class="chat-launcher" id="chatLauncher" type="button">
+      <span class="launcher-icon">✦</span>
+      <span>Ask about report</span>
+      <span class="chat-badge" id="chatBadge" style="display:none">●</span>
+    </button>
+
+    <!-- ═══ Chat Drawer ═══ -->
+    <aside class="chat-drawer" id="chatDrawer" aria-live="polite">
+      <div class="drawer-header">
+        <div>
+          <p class="eyebrow">AI assistant</p>
+          <h3>Medical Chatbot</h3>
+        </div>
+        <div class="drawer-header-actions">
+          <button class="icon-btn" id="clearChatBtn" type="button" title="Clear chat">🗑️</button>
+          <button class="close-chat" id="closeChat" type="button" aria-label="Close chat">✕</button>
+        </div>
+      </div>
+
+      <div class="chat-status" id="chatStatus">
+        <span class="status-dot"></span>
+        <span id="chatStatusText">No report loaded</span>
+      </div>
+
+      <div class="chat-box" id="chatBox">
+        <div class="message bot">
+          <div class="message-avatar">✦</div>
+          <div class="message-content">
+            <p>Hello! I'm your medical AI assistant. Upload a report and I can answer questions about it — lab values, diagnoses, medications, follow-up recommendations, and more.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick action chips -->
+      <div class="chat-chips" id="chatChips">
+        <button class="chip" data-msg="What are the key findings?">Key findings</button>
+        <button class="chip" data-msg="Are there any abnormal values?">Abnormal values</button>
+        <button class="chip" data-msg="What follow-up is recommended?">Follow-up</button>
+        <button class="chip" data-msg="Explain in simple terms">Simplify</button>
+      </div>
+
+      <form class="chat-form" id="chatForm">
+        <input id="chatInput" type="text" placeholder="Ask anything about the report..." autocomplete="off" />
+        <button type="submit" id="chatSendBtn">
+          <span>Send</span>
+        </button>
+      </form>
+    </aside>
+
+    <script src="ai-service.js"></script>
+    <script src="dashboard.js"></script>
+  </body>
+</html>
