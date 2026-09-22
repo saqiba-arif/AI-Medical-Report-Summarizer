@@ -1,20 +1,20 @@
 /* ═══════════════════════════════════════════
    AI SERVICE — Gemini API Integration
+   API key is secured in Netlify serverless function
    ═══════════════════════════════════════════ */
 
 const AIService = (() => {
   // ══════════════════════════════════════════
-  // ⚠️ PASTE YOUR GEMINI API KEY BELOW
-  // Get free key: https://aistudio.google.com/apikey
+  // 🔒 API key is stored securely on the server
+  // Set GEMINI_API_KEY in Netlify Environment Variables
   // ══════════════════════════════════════════
-  const API_KEY = "AQ.Ab8RN6LmU_NVHoPjAi6PKBdfIm-pHW17H_JRr49zmDSDueQdKQ";
+  const SERVERLESS_ENDPOINT = "/.netlify/functions/gemini";
 
   // Model configuration — fallback chain (tries each in order)
   const MODELS = [
     "gemini-3.8-flash",   // Latest (Sept 2026) — fastest & most capable
     "gemini-3.6-flash",   // Stable fallback
   ];
-  const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
   // Retry configuration
   const MAX_RETRIES = 2;
@@ -24,9 +24,9 @@ const AIService = (() => {
   let reportContext = "";
   let reportFileName = "";
 
-  // ── Check if API key is configured ──
+  // ── API is always configured (key is server-side) ──
   function isConfigured() {
-    return API_KEY && API_KEY !== "PASTE_YOUR_GEMINI_API_KEY_HERE" && API_KEY.length > 10;
+    return true;
   }
 
   // ── Extract text from file ──
@@ -81,23 +81,19 @@ const AIService = (() => {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  // ── Call Gemini API with model fallback + retry ──
+  // ── Call Gemini API via serverless function with model fallback + retry ──
   async function callGemini(parts, systemInstruction = "") {
-    if (!isConfigured()) {
-      throw new Error("API key not configured. Please add your Gemini API key in ai-service.js");
-    }
-
-    const body = {
+    const requestBody = {
       contents: [{ parts }],
     };
 
     if (systemInstruction) {
-      body.systemInstruction = {
+      requestBody.systemInstruction = {
         parts: [{ text: systemInstruction }],
       };
     }
 
-    body.generationConfig = {
+    requestBody.generationConfig = {
       temperature: 0.3,
       topP: 0.8,
       topK: 40,
@@ -108,15 +104,15 @@ const AIService = (() => {
 
     // Try each model in the fallback chain
     for (const model of MODELS) {
-      const apiUrl = `${API_BASE}/${model}:generateContent`;
       console.log(`🤖 Trying model: ${model}...`);
 
       for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
-          const response = await fetch(`${apiUrl}?key=${API_KEY}`, {
+          // Call our secure serverless function (API key is on the server)
+          const response = await fetch(SERVERLESS_ENDPOINT, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
+            body: JSON.stringify({ model, requestBody }),
           });
 
           if (!response.ok) {

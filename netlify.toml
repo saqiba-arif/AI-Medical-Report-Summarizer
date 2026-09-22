@@ -1,0 +1,13 @@
+# ══════════════════════════════════════
+# Netlify Configuration
+# ══════════════════════════════════════
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# ── Redirects for SPA-like behavior ──
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
