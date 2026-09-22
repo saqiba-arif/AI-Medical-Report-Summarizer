@@ -7,7 +7,7 @@ const AIService = (() => {
   // ⚠️ PASTE YOUR GEMINI API KEY BELOW
   // Get free key: https://aistudio.google.com/apikey
   // ══════════════════════════════════════════
-  const API_KEY = "PASTE_YOUR_GEMINI_API_KEY_HERE";
+  const API_KEY = "AQ.Ab8RN6LmU_NVHoPjAi6PKBdfIm-pHW17H_JRr49zmDSDueQdKQ";
 
   // Model configuration — fallback chain (tries each in order)
   const MODELS = [
