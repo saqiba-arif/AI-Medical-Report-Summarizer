@@ -12,13 +12,14 @@ const AIService = (() => {
 
   // Model configuration — fallback chain (tries each in order)
   const MODELS = [
-    "gemini-3.8-flash",   // Latest (Sept 2026) — fastest & most capable
-    "gemini-3.6-flash",   // Stable fallback
+    "gemini-3.8-flash",        // Latest GA — fastest & most capable
+    "gemini-3.5-flash",        // Frontier intelligence fallback
+    "gemini-3.5-flash-lite",   // Efficient high-volume fallback
   ];
 
   // Retry configuration
-  const MAX_RETRIES = 2;
-  const BASE_DELAY_MS = 1500; // 1.5 seconds initial delay
+  const MAX_RETRIES = 3;
+  const BASE_DELAY_MS = 2000; // 2 seconds initial delay
 
   // Store report context for chatbot
   let reportContext = "";
