@@ -8,7 +8,7 @@ const AIService = (() => {
   // 🔒 API key is stored securely on the server
   // Set GEMINI_API_KEY in Netlify Environment Variables
   // ══════════════════════════════════════════
-  const SERVERLESS_ENDPOINT = "/.netlify/functions/gemini";
+  const SERVERLESS_ENDPOINT = "/api/gemini";
 
   // Model configuration — fallback chain (tries each in order)
   const MODELS = [
