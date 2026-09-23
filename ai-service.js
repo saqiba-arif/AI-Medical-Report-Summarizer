@@ -10,14 +10,14 @@ const AIService = (() => {
   // ══════════════════════════════════════════
   const SERVERLESS_ENDPOINT = "/api/gemini";
 
-  // Model configuration — ordered strictly by lowest latency, reliability & throughput
+  // Model configuration — latest Gemini 3 series ordered by speed and intelligence
   const MODELS = [
-    "gemini-2.5-flash",        // #1 priority: Google's latest high-speed model
-    "gemini-1.5-flash",        // #2 priority: Universal ultra-fast fallback
-    "gemini-2.0-flash",        // #3 priority: Standard fast fallback
-    "gemini-3.8-flash",        // #4 priority: Deep reasoning fallback
-    "gemini-2.5-flash-lite",   // #5 priority: Ultra-lightweight fallback
-    "gemini-3.5-flash-lite",   // #6 priority: Legacy fallback
+    "gemini-3.8-flash",        // #1: Google's flagship Gemini 3 high-speed model
+    "gemini-3.5-flash",        // #2: Gemini 3 fast workhorse
+    "gemini-3.5-flash-lite",   // #3: Gemini 3 ultra-low latency model
+    "gemini-3.7-flash",        // #4: Gemini 3.7 fast reasoning
+    "gemini-3.6-flash",        // #5: Gemini 3.6 fallback
+    "gemini-3.1-flash-lite",   // #6: Gemini 3.1 lightweight fallback
   ];
 
   // Remember and prioritize the known working model from previous successful requests
@@ -186,7 +186,10 @@ const AIService = (() => {
       temperature: 0.1, // Lower temperature for faster, deterministic responses
       topP: 0.8,
       topK: 40,
-      maxOutputTokens: 1000, // Compact output boundary prevents generation stalls
+      maxOutputTokens: 1000,
+      thinkingConfig: {
+        thinkingLevel: "low", // Eliminates 15-20s thinking delay in Gemini 3 models
+      },
     };
 
     let lastError = null;
@@ -207,6 +210,12 @@ const AIService = (() => {
             const errorData = await response.json().catch(() => ({}));
             const errorMsg = errorData?.error?.message || `API error: ${response.status}`;
             const status = response.status;
+
+            if (status === 400 && errorMsg.toLowerCase().includes("thinking") && requestBody.generationConfig?.thinkingConfig) {
+              console.log(`ℹ️ Retrying ${model} without thinkingConfig...`);
+              delete requestBody.generationConfig.thinkingConfig;
+              continue;
+            }
 
             if ((status === 429 || status === 503) && attempt < MAX_RETRIES) {
               const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
@@ -323,6 +332,9 @@ const AIService = (() => {
       topP: 0.8,
       topK: 40,
       maxOutputTokens: 1000,
+      thinkingConfig: {
+        thinkingLevel: "low",
+      },
     };
 
     let lastError = null;
@@ -342,6 +354,11 @@ const AIService = (() => {
             const errorData = await response.json().catch(() => ({}));
             const errorMsg = errorData?.error?.message || `API error: ${response.status}`;
             const status = response.status;
+
+            if (status === 400 && errorMsg.toLowerCase().includes("thinking") && requestBody.generationConfig?.thinkingConfig) {
+              delete requestBody.generationConfig.thinkingConfig;
+              continue;
+            }
 
             if ((status === 429 || status === 503) && attempt < MAX_RETRIES) {
               const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
