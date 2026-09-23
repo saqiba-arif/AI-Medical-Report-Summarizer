@@ -2,27 +2,29 @@
    AI Medical Report Summarizer - Service Worker
    ═══════════════════════════════════════════ */
 
-const CACHE_NAME = 'ai-medical-v2';
+const CACHE_NAME = 'ai-medical-v3';
 const CORE_ASSETS = [
   '/',
   '/?source=pwa',
-  '/index.html',
-  '/login.html',
-  '/signup.html',
-  '/dashboard.html',
-  '/style.css',
-  '/dashboard.css',
-  '/auth.css',
-  '/script.js',
-  '/pwa.js',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-maskable-512.png',
-  '/icons/apple-touch-icon.png',
-  '/icons/favicon-32.png',
-  '/favicon.png',
-  '/app-logo.png'
+  'index.html',
+  'login.html',
+  'signup.html',
+  'dashboard.html',
+  'style.css',
+  'dashboard.css',
+  'auth.css',
+  'script.js',
+  'dashboard.js',
+  'ai-service.js',
+  'pwa.js',
+  'manifest.json',
+  'icons/icon-192.png',
+  'icons/icon-512.png',
+  'icons/icon-maskable-512.png',
+  'icons/apple-touch-icon.png',
+  'icons/favicon-32.png',
+  'favicon.png',
+  'app-logo.png'
 ];
 
 // ── Install Event: Pre-cache core assets gracefully ──

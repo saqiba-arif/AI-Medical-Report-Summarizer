@@ -7,12 +7,12 @@ const AIService = (() => {
   const PRIMARY_ENDPOINT = "/api/gemini";
   const BACKUP_ENDPOINT = "/api/gemini-backup";
 
-  // Models: Clean list with user's 4 models
+  // Models: #1 Gemini 3.8 Flash followed by latest high-speed models
   const MODELS = [
-    "gemini-3.8-flash",            // #1: Primary model
-    "gemini-3.5-transcribe",       // #2: Transcribe model
-    "gemini-3.1-flash-image",      // #3: Image model
-    "gemini-3.5-transcribe-live",  // #4: Live transcribe model
+    "gemini-3.8-flash",        // #1: Gemini 3.8 Flash (User primary priority)
+    "gemini-3.5-transcribe",        // #2: Next-generation high-speed model
+    "gemini-3.1-flash-image",        // #3: Fast modern production model
+    "gemini-3.5-transcribe-live",        // #4: Universal ultra-fast fallback
   ];
 
   function getOrderedModels() {
@@ -195,7 +195,7 @@ const AIService = (() => {
           const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
           if (text) {
             console.log(`✅ Success with model: ${model}`);
-            try { localStorage.setItem("gemini_working_model", model); } catch (e) {}
+            try { localStorage.setItem("gemini_working_model", model); } catch (e) { }
             if (onChunk) onChunk(text, text);
             return text;
           }
@@ -232,13 +232,13 @@ const AIService = (() => {
                   onChunk(chunk, fullText);
                 }
               }
-            } catch (e) {}
+            } catch (e) { }
           }
         }
 
         if (fullText.trim().length > 0) {
           console.log(`✅ Success streaming with model: ${model}`);
-          try { localStorage.setItem("gemini_working_model", model); } catch (e) {}
+          try { localStorage.setItem("gemini_working_model", model); } catch (e) { }
           return fullText;
         }
 
@@ -300,7 +300,7 @@ const AIService = (() => {
         const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (text) {
           console.log(`✅ Success with backup on model: ${model}`);
-          try { localStorage.setItem("gemini_working_model", model); } catch (e) {}
+          try { localStorage.setItem("gemini_working_model", model); } catch (e) { }
           return text;
         }
       } catch (err) {
