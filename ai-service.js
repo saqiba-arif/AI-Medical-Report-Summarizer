@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════
    AI SERVICE — Gemini API Integration
-   API key is secured in Netlify Edge Function
+   API key is secured in Netlify Edge Function & Backup Function
    ═══════════════════════════════════════════ */
 
 const AIService = (() => {
@@ -8,16 +8,22 @@ const AIService = (() => {
   // 🔒 API key is stored securely on the server
   // Set GEMINI_API_KEY in Netlify Environment Variables
   // ══════════════════════════════════════════
-  const SERVERLESS_ENDPOINT = "/api/gemini";
+  const PRIMARY_ENDPOINT = "/api/gemini";
+  const BACKUP_ENDPOINT = "/api/gemini-backup";
 
-  // Model configuration — latest Gemini 3 series ordered by speed and intelligence
+  // Model configuration — user models prioritized, followed by proven high-speed fallbacks
   const MODELS = [
-    "gemini-3.8-flash",        // #1: Google's flagship Gemini 3 high-speed model
-    "gemini-3.5-flash",        // #2: Gemini 3 fast workhorse
-    "gemini-3.5-flash-lite",   // #3: Gemini 3 ultra-low latency model
-    "gemini-3.7-flash",        // #4: Gemini 3.7 fast reasoning
-    "gemini-3.6-flash",        // #5: Gemini 3.6 fallback
-    "gemini-3.1-flash-lite",   // #6: Gemini 3.1 lightweight fallback
+    "gemini-3.8-flash",        // User model #1: Gemini 3 high-speed
+    "gemini-3.5-flash",        // User model #2: Gemini 3 fast
+    "gemini-3.5-flash-lite",   // User model #3: Gemini 3 ultra-low latency
+    "gemini-3.7-flash",        // User model #4: Gemini 3.7 reasoning
+    "gemini-3.6-flash",        // User model #5: Gemini 3.6 fallback
+    "gemini-3.1-flash-lite",   // User model #6: Gemini 3.1 lightweight fallback
+    "gemini-2.5-flash",        // Proven high-speed model (<1s response)
+    "gemini-2.0-flash",        // Reliable fast fallback
+    "gemini-1.5-flash",        // Universal high-speed fallback
+    "gemini-2.5-flash-lite",   // Ultra-lightweight fallback
+    "gemini-2.0-flash-lite",   // Lowest latency fallback
   ];
 
   // Remember and prioritize the known working model from previous successful requests
@@ -31,9 +37,9 @@ const AIService = (() => {
     return MODELS;
   }
 
-  // Retry configuration — optimized for fast response
+  // Retry configuration — optimized for instant response
   const MAX_RETRIES = 2;
-  const BASE_DELAY_MS = 350; // 350ms fast backoff
+  const BASE_DELAY_MS = 250; // 250ms fast backoff for 429 rate limits
 
   // Store report context for chatbot
   let reportContext = "";
@@ -170,6 +176,27 @@ const AIService = (() => {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  // ── Unified API fetcher with primary/backup automatic failover ──
+  async function fetchEndpoint(endpoint, payload) {
+    try {
+      return await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      if (endpoint === PRIMARY_ENDPOINT) {
+        console.warn(`Primary endpoint failed, attempting backup...`, err);
+        return await fetch(BACKUP_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+      throw err;
+    }
+  }
+
   // ── Call Gemini API with SSE streaming (<1s Time-To-First-Token) ──
   async function callGeminiStream(parts, systemInstruction = "", onChunk = null) {
     const requestBody = {
@@ -197,26 +224,36 @@ const AIService = (() => {
 
       for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
-          const response = await fetch(SERVERLESS_ENDPOINT, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ model, requestBody, stream: true }),
-          });
+          let response = await fetchEndpoint(PRIMARY_ENDPOINT, { model, requestBody, stream: true });
+
+          // If primary returned 500, immediately test backup serverless function
+          if (response.status === 500) {
+            try {
+              const backupRes = await fetch(BACKUP_ENDPOINT, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ model, requestBody, stream: false }),
+              });
+              if (backupRes.ok) {
+                response = backupRes;
+              }
+            } catch (_) {}
+          }
 
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             const errorMsg = errorData?.error?.message || `API error: ${response.status}`;
             const status = response.status;
 
-            if ((status === 429 || status === 503) && attempt < MAX_RETRIES) {
+            if (status === 429 && attempt < MAX_RETRIES) {
               const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
-              console.log(`⏳ ${model} busy (${status}). Retrying in ${delay / 1000}s... (attempt ${attempt}/${MAX_RETRIES})`);
+              console.log(`⏳ ${model} busy (429). Retrying in ${delay}ms...`);
               await sleep(delay);
               lastError = new Error(errorMsg);
               continue;
             }
 
-            // For any error (400, 404, 500, etc.), log and immediately try next model
+            // For any 400, 404, 500, 503, immediately skip to next model in 0ms!
             console.log(`⚠️ ${model} error (${status}: ${errorMsg}). Trying next model...`);
             lastError = new Error(errorMsg);
             break; // Break retry loop, try next model immediately
@@ -225,13 +262,16 @@ const AIService = (() => {
           // Check if response is streaming SSE
           const contentType = response.headers.get("Content-Type") || "";
           if (!contentType.includes("text/event-stream") || !response.body) {
-            const data = await response.json();
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            const data = await response.json().catch(() => null);
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
             if (text) {
+              console.log(`✅ Success with model: ${model}`);
+              try { localStorage.setItem("gemini_working_model", model); } catch (e) {}
               if (onChunk) onChunk(text, text);
               return text;
             }
-            throw new Error("No response from AI model");
+            lastError = new Error("No response candidates from model");
+            break; // Try next model
           }
 
           // Stream chunks via Server-Sent Events
@@ -276,24 +316,22 @@ const AIService = (() => {
             return fullText;
           }
 
-          throw new Error("Stream completed without text content");
+          lastError = new Error("Stream completed without text content");
+          break; // Try next model
 
         } catch (error) {
           lastError = error;
 
           if (error.name === "TypeError" && attempt < MAX_RETRIES) {
             const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
-            console.log(`🔄 Network error. Retrying in ${delay / 1000}s...`);
+            console.log(`🔄 Network error. Retrying in ${delay}ms...`);
             await sleep(delay);
             continue;
           }
 
-          if (attempt >= MAX_RETRIES) {
-            console.log(`❌ ${model} failed after ${MAX_RETRIES} attempts. Trying next model...`);
-            break;
-          }
-
-          throw error;
+          // For any error on this model, break retry loop and proceed to next model
+          console.warn(`⚠️ Model ${model} failed, moving to next model:`, error.message);
+          break;
         }
       }
     }
@@ -329,18 +367,27 @@ const AIService = (() => {
 
       for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
-          const response = await fetch(SERVERLESS_ENDPOINT, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ model, requestBody, stream: false }),
-          });
+          let response = await fetchEndpoint(PRIMARY_ENDPOINT, { model, requestBody, stream: false });
+
+          if (response.status === 500) {
+            try {
+              const backupRes = await fetch(BACKUP_ENDPOINT, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ model, requestBody, stream: false }),
+              });
+              if (backupRes.ok) {
+                response = backupRes;
+              }
+            } catch (_) {}
+          }
 
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             const errorMsg = errorData?.error?.message || `API error: ${response.status}`;
             const status = response.status;
 
-            if ((status === 429 || status === 503) && attempt < MAX_RETRIES) {
+            if (status === 429 && attempt < MAX_RETRIES) {
               const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
               await sleep(delay);
               lastError = new Error(errorMsg);
@@ -353,10 +400,11 @@ const AIService = (() => {
             break;
           }
 
-          const data = await response.json();
+          const data = await response.json().catch(() => null);
 
-          if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
-            throw new Error("No response from AI model");
+          if (!data || !data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+            lastError = new Error("No response from AI model");
+            break;
           }
 
           console.log(`✅ Success with model: ${model}`);
@@ -372,16 +420,13 @@ const AIService = (() => {
             continue;
           }
 
-          if (attempt >= MAX_RETRIES) {
-            break;
-          }
-
-          throw error;
+          console.warn(`⚠️ Standard model ${model} failed, moving to next model:`, error.message);
+          break;
         }
       }
     }
 
-    throw lastError || new Error("All models failed. Please check your internet connection and try again.");
+    throw lastError || new Error("Please check your GEMINI_API_KEY in Netlify settings or try again.");
   }
 
   // ══════════════════════════════════════

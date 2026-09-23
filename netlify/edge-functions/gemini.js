@@ -5,16 +5,18 @@
 
 const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, x-goog-api-key",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 export default async (request, context) => {
   // ── Handle CORS preflight ──
   if (request.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-      },
+      headers: CORS_HEADERS,
     });
   }
 
@@ -24,21 +26,41 @@ export default async (request, context) => {
       JSON.stringify({ error: { message: "Method not allowed" } }),
       {
         status: 405,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
       }
     );
   }
 
-  // ── Check API key from environment ──
-  const API_KEY = Deno.env.get("GEMINI_API_KEY");
+  // ── Extract API key safely from headers, Netlify.env, or Deno.env ──
+  let API_KEY =
+    request.headers.get("x-goog-api-key") ||
+    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ||
+    "";
+
+  if (!API_KEY) {
+    try {
+      if (typeof Netlify !== "undefined" && Netlify.env && typeof Netlify.env.get === "function") {
+        API_KEY = Netlify.env.get("GEMINI_API_KEY") || "";
+      }
+    } catch (_) {}
+  }
+
+  if (!API_KEY) {
+    try {
+      if (typeof Deno !== "undefined" && Deno.env && typeof Deno.env.get === "function") {
+        API_KEY = Deno.env.get("GEMINI_API_KEY") || "";
+      }
+    } catch (_) {}
+  }
+
   if (!API_KEY) {
     return new Response(
       JSON.stringify({
-        error: { message: "GEMINI_API_KEY environment variable is not configured on the server." },
+        error: { message: "GEMINI_API_KEY is not configured in Netlify environment variables." },
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
       }
     );
   }
@@ -52,7 +74,7 @@ export default async (request, context) => {
         JSON.stringify({ error: { message: "Missing 'model' or 'requestBody' in request." } }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...CORS_HEADERS },
         }
       );
     }
@@ -72,12 +94,18 @@ export default async (request, context) => {
       });
 
       if (!geminiResponse.ok) {
-        const errorData = await geminiResponse.json().catch(() => ({}));
+        const errorText = await geminiResponse.text().catch(() => "");
+        let errorData = {};
+        try {
+          errorData = JSON.parse(errorText);
+        } catch (_) {
+          errorData = { error: { message: errorText || `Google API error: ${geminiResponse.status}` } };
+        }
         return new Response(JSON.stringify(errorData), {
           status: geminiResponse.status,
           headers: {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
+            ...CORS_HEADERS,
           },
         });
       }
@@ -87,7 +115,7 @@ export default async (request, context) => {
         headers: {
           "Content-Type": "text/event-stream; charset=utf-8",
           "Cache-Control": "no-cache, no-transform",
-          "Access-Control-Allow-Origin": "*",
+          ...CORS_HEADERS,
         },
       });
     }
@@ -105,14 +133,20 @@ export default async (request, context) => {
       body: JSON.stringify(requestBody),
     });
 
-    const responseData = await geminiResponse.json().catch(() => ({}));
+    const responseText = await geminiResponse.text().catch(() => "");
+    let responseData = {};
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (_) {
+      responseData = { error: { message: responseText || `Google API error: ${geminiResponse.status}` } };
+    }
 
     // ── Return Gemini's response ──
     return new Response(JSON.stringify(responseData), {
       status: geminiResponse.status,
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
+        ...CORS_HEADERS,
       },
     });
   } catch (error) {
@@ -121,7 +155,7 @@ export default async (request, context) => {
       JSON.stringify({ error: { message: error.message || "Internal server error" } }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
       }
     );
   }

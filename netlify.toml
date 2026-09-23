@@ -4,8 +4,15 @@
 
 [build]
   publish = "."
+  functions = "netlify/functions"
 
-# ── Edge Functions (30s timeout vs 10s for regular functions) ──
+# ── Primary: Edge Function (fast global CDN, 30s timeout) ──
 [[edge_functions]]
   function = "gemini"
   path = "/api/gemini"
+
+# ── Backup: Standard Serverless Function ──
+[[redirects]]
+  from = "/api/gemini-backup"
+  to = "/.netlify/functions/gemini"
+  status = 200
