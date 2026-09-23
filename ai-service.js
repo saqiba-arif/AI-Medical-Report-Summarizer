@@ -192,7 +192,7 @@ const AIService = (() => {
         // If not streaming SSE, read JSON response directly
         if (!contentType.includes("text/event-stream") || !response.body) {
           const data = await response.json().catch(() => null);
-          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || data?.choices?.[0]?.message?.content;
           if (text) {
             console.log(`✅ Success with model: ${model}`);
             try { localStorage.setItem("gemini_working_model", model); } catch (e) { }
@@ -225,7 +225,7 @@ const AIService = (() => {
 
             try {
               const parsed = JSON.parse(jsonStr);
-              const chunk = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
+              const chunk = parsed?.candidates?.[0]?.content?.parts?.[0]?.text || parsed?.choices?.[0]?.delta?.content;
               if (chunk) {
                 fullText += chunk;
                 if (onChunk) {
@@ -297,7 +297,7 @@ const AIService = (() => {
         }
 
         const data = await response.json().catch(() => null);
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || data?.choices?.[0]?.message?.content;
         if (text) {
           console.log(`✅ Success with backup on model: ${model}`);
           try { localStorage.setItem("gemini_working_model", model); } catch (e) { }
