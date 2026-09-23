@@ -35,7 +35,7 @@ window.addEventListener('appinstalled', () => {
 });
 
 function updateInstallButtons(isReady) {
-  const buttons = document.querySelectorAll('#mainInstallBtn, #ctaInstallBtn, [data-pwa-install]');
+  const buttons = document.querySelectorAll('#mainInstallBtn, [data-pwa-install]');
   buttons.forEach((btn) => {
     btn.classList.add('ready');
   });
@@ -73,7 +73,7 @@ function closePwaModal() {
 
 // ── 4. Setup Event Listeners on DOM Load ──
 document.addEventListener('DOMContentLoaded', () => {
-  const installButtons = document.querySelectorAll('#mainInstallBtn, #ctaInstallBtn, [data-pwa-install]');
+  const installButtons = document.querySelectorAll('#mainInstallBtn, [data-pwa-install]');
   installButtons.forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();

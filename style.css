@@ -307,6 +307,10 @@ p { color: var(--text-secondary); }
 .nav a:hover { color: var(--text); }
 .nav a:hover::after { width: 100%; }
 
+.nav-mobile-auth {
+  display: none;
+}
+
 .nav-actions {
   display: flex;
   align-items: center;
@@ -1695,9 +1699,34 @@ p { color: var(--text-secondary); }
     pointer-events: auto;
   }
 
-  .nav-actions .btn-ghost,
-  .nav-actions .btn-primary {
+  .nav-mobile-auth {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .nav-btn-full {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .header-signup-btn {
     display: none;
+  }
+
+  .header-login-btn {
+    display: inline-flex !important;
+    padding: 8px 16px !important;
+    font-size: 0.88rem !important;
+    border-radius: 10px !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--border-light) !important;
+    color: var(--text) !important;
   }
 
   .hero {
