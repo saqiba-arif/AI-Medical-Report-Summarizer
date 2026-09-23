@@ -10,17 +10,30 @@ const AIService = (() => {
   // ══════════════════════════════════════════
   const SERVERLESS_ENDPOINT = "/api/gemini";
 
-  // Model configuration — ordered strictly by lowest latency and highest throughput
+  // Model configuration — ordered strictly by lowest latency, reliability & throughput
   const MODELS = [
-    "gemini-3.5-flash-lite",   // #1 priority: Google's lowest latency & fastest throughput model
-    "gemini-3.5-flash",        // #2 priority: fast & balanced intelligence
-    "gemini-3.8-flash",        // #3 priority: maximum reasoning depth fallback
-    "gemini-3.1-flash-lite",   // #4 priority: legacy lightweight fallback
+    "gemini-2.5-flash",        // #1 priority: Google's latest high-speed model
+    "gemini-1.5-flash",        // #2 priority: Universal ultra-fast fallback
+    "gemini-2.0-flash",        // #3 priority: Standard fast fallback
+    "gemini-3.8-flash",        // #4 priority: Deep reasoning fallback
+    "gemini-2.5-flash-lite",   // #5 priority: Ultra-lightweight fallback
+    "gemini-3.5-flash-lite",   // #6 priority: Legacy fallback
   ];
+
+  // Remember and prioritize the known working model from previous successful requests
+  function getOrderedModels() {
+    try {
+      const saved = localStorage.getItem("gemini_working_model");
+      if (saved && MODELS.includes(saved)) {
+        return [saved, ...MODELS.filter((m) => m !== saved)];
+      }
+    } catch (e) {}
+    return MODELS;
+  }
 
   // Retry configuration — optimized for fast response
   const MAX_RETRIES = 2;
-  const BASE_DELAY_MS = 600; // 600ms fast backoff
+  const BASE_DELAY_MS = 350; // 350ms fast backoff
 
   // Store report context for chatbot
   let reportContext = "";
@@ -63,10 +76,10 @@ const AIService = (() => {
 
   // ── Convert file to base64 with fast off-thread image compression ──
   async function fileToBase64(file) {
-    // If it's an image, downsample to 1200px max & JPEG 0.78 for optimal speed & OCR quality
+    // If it's an image, downsample to 1000px max & JPEG 0.70 for 3x faster mobile upload & OCR
     if (file.type && file.type.startsWith("image/") && file.type !== "image/gif") {
-      const maxDim = 1200;
-      const quality = 0.78;
+      const maxDim = 1000;
+      const quality = 0.70;
 
       // 1. Try modern native createImageBitmap (runs off-thread, up to 5x faster)
       if (typeof createImageBitmap === "function") {
@@ -173,13 +186,13 @@ const AIService = (() => {
       temperature: 0.1, // Lower temperature for faster, deterministic responses
       topP: 0.8,
       topK: 40,
-      maxOutputTokens: 1500, // Compact output boundary prevents generation stalls
+      maxOutputTokens: 1000, // Compact output boundary prevents generation stalls
     };
 
     let lastError = null;
 
-    // Try models in order of lowest latency
-    for (const model of MODELS) {
+    // Try models in order of lowest latency, prioritizing last successful model
+    for (const model of getOrderedModels()) {
       console.log(`🤖 Requesting model (streaming): ${model}...`);
 
       for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -262,6 +275,7 @@ const AIService = (() => {
 
           if (fullText.trim().length > 0) {
             console.log(`✅ Success streaming with model: ${model}`);
+            try { localStorage.setItem("gemini_working_model", model); } catch (e) {}
             return fullText;
           }
 
@@ -308,12 +322,12 @@ const AIService = (() => {
       temperature: 0.1,
       topP: 0.8,
       topK: 40,
-      maxOutputTokens: 1500,
+      maxOutputTokens: 1000,
     };
 
     let lastError = null;
 
-    for (const model of MODELS) {
+    for (const model of getOrderedModels()) {
       console.log(`🤖 Trying model (standard): ${model}...`);
 
       for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -351,6 +365,7 @@ const AIService = (() => {
           }
 
           console.log(`✅ Success with model: ${model}`);
+          try { localStorage.setItem("gemini_working_model", model); } catch (e) {}
           return data.candidates[0].content.parts[0].text;
 
         } catch (error) {
@@ -393,7 +408,8 @@ const AIService = (() => {
     const systemPrompt = `You are an expert medical report analyzer. Provide a clear, concise, structured summary for healthcare professionals.
 
 IMPORTANT RULES:
-- Be accurate, concise, and direct — avoid filler or pleasantries
+- Be fast, accurate, concise, and direct — avoid filler or pleasantries
+- Do NOT output any intro remarks or greetings. Start immediately with "🏥 **Patient Overview**"
 - Highlight critical or abnormal values in **bold**
 - Include lab results with reference ranges if present in report
 - If you cannot read or understand part of the report, state so clearly
