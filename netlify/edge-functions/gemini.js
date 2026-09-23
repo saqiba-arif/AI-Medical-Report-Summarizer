@@ -45,7 +45,7 @@ export default async (request, context) => {
 
   try {
     // ── Parse request from frontend ──
-    const { model, requestBody } = await request.json();
+    const { model, requestBody, stream } = await request.json();
 
     if (!model || !requestBody) {
       return new Response(
@@ -57,9 +57,44 @@ export default async (request, context) => {
       );
     }
 
-    // ── Forward request to Gemini API ──
+    // ── Streaming mode via SSE for real-time response (< 1s first token) ──
+    if (stream) {
+      const apiUrl = `${API_BASE}/${model}:streamGenerateContent?alt=sse`;
+      console.log(`🤖 Proxying stream request to model: ${model}`);
+
+      const geminiResponse = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": API_KEY,
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!geminiResponse.ok) {
+        const errorData = await geminiResponse.json().catch(() => ({}));
+        return new Response(JSON.stringify(errorData), {
+          status: geminiResponse.status,
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+      }
+
+      return new Response(geminiResponse.body, {
+        status: geminiResponse.status,
+        headers: {
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "Cache-Control": "no-cache, no-transform",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+    }
+
+    // ── Standard non-streaming mode ──
     const apiUrl = `${API_BASE}/${model}:generateContent`;
-    console.log(`🤖 Proxying request to model: ${model}`);
+    console.log(`🤖 Proxying standard request to model: ${model}`);
 
     const geminiResponse = await fetch(apiUrl, {
       method: "POST",

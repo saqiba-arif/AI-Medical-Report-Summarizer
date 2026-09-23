@@ -169,30 +169,43 @@ document.addEventListener("DOMContentLoaded", () => {
     isAnalyzing = true;
     showLoading();
 
-    // Loading text progression
+    let hasStreamStarted = false;
+
+    // Fast loading progression
     const loadingMessages = [
       "AI is reading your medical report...",
       "Extracting key clinical data...",
       "Analyzing lab values and findings...",
-      "Identifying risk factors...",
       "Generating structured summary...",
     ];
 
     let msgIndex = 0;
     const loadingInterval = setInterval(() => {
       msgIndex++;
-      if (msgIndex < loadingMessages.length) {
+      if (msgIndex < loadingMessages.length && !hasStreamStarted) {
         loadingText.textContent = loadingMessages[msgIndex];
-        loadingBarFill.style.width = `${((msgIndex + 1) / loadingMessages.length) * 90}%`;
+        loadingBarFill.style.width = `${((msgIndex + 1) / loadingMessages.length) * 85}%`;
       }
-    }, 2500);
+    }, 1200);
 
     try {
-      const summary = await AIService.summarizeReport(file);
+      const summary = await AIService.summarizeReport(file, (chunk, full) => {
+        if (!hasStreamStarted) {
+          hasStreamStarted = true;
+          clearInterval(loadingInterval);
+          summaryLoading.style.display = "none";
+          summaryEmpty.style.display = "none";
+          summaryError.style.display = "none";
+          summaryBox.style.display = "block";
+          regenerateBtn.style.display = "none";
+          copySummaryBtn.style.display = "none";
+          summaryPanel.classList.remove("analyzing");
+          summaryPanel.classList.add("has-summary");
+        }
+        summaryBox.innerHTML = formatSummary(full) + '<span class="streaming-cursor"></span>';
+      });
 
       clearInterval(loadingInterval);
-      loadingBarFill.style.width = "100%";
-
       showSummary(summary);
 
       // Update chat status
@@ -418,7 +431,20 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // Send chat message
+  // Helper to append a bot message container for streaming
+  function appendBotMessagePlaceholder() {
+    const el = document.createElement("div");
+    el.className = "message bot";
+    el.innerHTML = `
+      <div class="message-avatar">✦</div>
+      <div class="message-content"></div>
+    `;
+    chatBox.appendChild(el);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    return el;
+  }
+
+  // Send chat message with live token streaming
   async function sendChatMessage(message) {
     if (!AIService.isConfigured()) {
       appendBotMessage("⚠️ API key not configured. Please open <code>ai-service.js</code> and paste your Gemini API key.");
@@ -432,15 +458,35 @@ document.addEventListener("DOMContentLoaded", () => {
     // Add user message
     appendUserMessage(message);
 
-    // Show typing indicator
+    // Show typing indicator initially
     const typingEl = showTypingIndicator();
+    let botMsgEl = null;
 
     try {
-      const response = await AIService.chatAboutReport(message);
-      removeTypingIndicator(typingEl);
-      appendBotMessage(formatChatResponse(response));
+      const response = await AIService.chatAboutReport(message, (chunk, full) => {
+        if (typingEl && typingEl.parentNode) {
+          removeTypingIndicator(typingEl);
+        }
+        if (!botMsgEl) {
+          botMsgEl = appendBotMessagePlaceholder();
+        }
+        botMsgEl.querySelector(".message-content").innerHTML = formatChatResponse(full) + '<span class="streaming-cursor"></span>';
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+
+      if (typingEl && typingEl.parentNode) {
+        removeTypingIndicator(typingEl);
+      }
+      if (botMsgEl) {
+        botMsgEl.querySelector(".message-content").innerHTML = formatChatResponse(response);
+      } else {
+        appendBotMessage(formatChatResponse(response));
+      }
+      chatBox.scrollTop = chatBox.scrollHeight;
     } catch (error) {
-      removeTypingIndicator(typingEl);
+      if (typingEl && typingEl.parentNode) {
+        removeTypingIndicator(typingEl);
+      }
       appendBotMessage(`⚠️ Error: ${error.message}. Please try again.`);
     } finally {
       isChatting = false;
