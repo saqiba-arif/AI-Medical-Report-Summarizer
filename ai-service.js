@@ -187,9 +187,6 @@ const AIService = (() => {
       topP: 0.8,
       topK: 40,
       maxOutputTokens: 1000,
-      thinkingConfig: {
-        thinkingLevel: "low", // Eliminates 15-20s thinking delay in Gemini 3 models
-      },
     };
 
     let lastError = null;
@@ -211,12 +208,6 @@ const AIService = (() => {
             const errorMsg = errorData?.error?.message || `API error: ${response.status}`;
             const status = response.status;
 
-            if (status === 400 && errorMsg.toLowerCase().includes("thinking") && requestBody.generationConfig?.thinkingConfig) {
-              console.log(`ℹ️ Retrying ${model} without thinkingConfig...`);
-              delete requestBody.generationConfig.thinkingConfig;
-              continue;
-            }
-
             if ((status === 429 || status === 503) && attempt < MAX_RETRIES) {
               const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
               console.log(`⏳ ${model} busy (${status}). Retrying in ${delay / 1000}s... (attempt ${attempt}/${MAX_RETRIES})`);
@@ -225,13 +216,10 @@ const AIService = (() => {
               continue;
             }
 
-            if (status === 404 || status === 400 || status === 429 || status === 503) {
-              console.log(`⚠️ ${model} unavailable (${status}). Trying next model...`);
-              lastError = new Error(errorMsg);
-              break; // Break retry loop, try next model immediately
-            }
-
-            throw new Error(errorMsg);
+            // For any error (400, 404, 500, etc.), log and immediately try next model
+            console.log(`⚠️ ${model} error (${status}: ${errorMsg}). Trying next model...`);
+            lastError = new Error(errorMsg);
+            break; // Break retry loop, try next model immediately
           }
 
           // Check if response is streaming SSE
@@ -332,9 +320,6 @@ const AIService = (() => {
       topP: 0.8,
       topK: 40,
       maxOutputTokens: 1000,
-      thinkingConfig: {
-        thinkingLevel: "low",
-      },
     };
 
     let lastError = null;
@@ -355,11 +340,6 @@ const AIService = (() => {
             const errorMsg = errorData?.error?.message || `API error: ${response.status}`;
             const status = response.status;
 
-            if (status === 400 && errorMsg.toLowerCase().includes("thinking") && requestBody.generationConfig?.thinkingConfig) {
-              delete requestBody.generationConfig.thinkingConfig;
-              continue;
-            }
-
             if ((status === 429 || status === 503) && attempt < MAX_RETRIES) {
               const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
               await sleep(delay);
@@ -367,12 +347,10 @@ const AIService = (() => {
               continue;
             }
 
-            if (status === 404 || status === 400 || status === 429 || status === 503) {
-              lastError = new Error(errorMsg);
-              break;
-            }
-
-            throw new Error(errorMsg);
+            // For any error (400, 404, 500, etc.), log and try next model
+            console.log(`⚠️ ${model} error (${status}: ${errorMsg}). Trying next model...`);
+            lastError = new Error(errorMsg);
+            break;
           }
 
           const data = await response.json();

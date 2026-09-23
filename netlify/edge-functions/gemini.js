@@ -105,7 +105,7 @@ export default async (request, context) => {
       body: JSON.stringify(requestBody),
     });
 
-    const responseData = await geminiResponse.json();
+    const responseData = await geminiResponse.json().catch(() => ({}));
 
     // ── Return Gemini's response ──
     return new Response(JSON.stringify(responseData), {
