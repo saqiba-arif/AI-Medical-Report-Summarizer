@@ -57,8 +57,7 @@ exports.handler = async (event) => {
       };
     }
 
-    const apiUrl = `${API_BASE}/${model}:generateContent`;
-    const res = await fetch(apiUrl, {
+    let res = await fetch(`${API_BASE}/${model}:generateContent`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -66,6 +65,25 @@ exports.handler = async (event) => {
       },
       body: JSON.stringify(requestBody),
     });
+
+    if (!res.ok && (res.status === 404 || res.status === 400)) {
+      for (const engine of ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]) {
+        try {
+          const fbRes = await fetch(`${API_BASE}/${engine}:generateContent`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": API_KEY,
+            },
+            body: JSON.stringify(requestBody),
+          });
+          if (fbRes.ok) {
+            res = fbRes;
+            break;
+          }
+        } catch (_) {}
+      }
+    }
 
     const responseText = await res.text().catch(() => "");
     let responseData = {};
