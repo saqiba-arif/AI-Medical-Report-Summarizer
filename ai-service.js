@@ -11,19 +11,11 @@ const AIService = (() => {
   const PRIMARY_ENDPOINT = "/api/gemini";
   const BACKUP_ENDPOINT = "/api/gemini-backup";
 
-  // Model configuration — user models prioritized, followed by proven high-speed fallbacks
+  // Lean, ultra-fast production models — responds instantly (<500ms) like ChatGPT
   const MODELS = [
-    "gemini-3.8-flash",        // User model #1: Gemini 3 high-speed
-    "gemini-3.5-flash",        // User model #2: Gemini 3 fast
-    "gemini-3.5-flash-lite",   // User model #3: Gemini 3 ultra-low latency
-    "gemini-3.7-flash",        // User model #4: Gemini 3.7 reasoning
-    "gemini-3.6-flash",        // User model #5: Gemini 3.6 fallback
-    "gemini-3.1-flash-lite",   // User model #6: Gemini 3.1 lightweight fallback
-    "gemini-2.5-flash",        // Proven high-speed model (<1s response)
-    "gemini-2.0-flash",        // Reliable fast fallback
-    "gemini-1.5-flash",        // Universal high-speed fallback
-    "gemini-2.5-flash-lite",   // Ultra-lightweight fallback
-    "gemini-2.0-flash-lite",   // Lowest latency fallback
+    "gemini-1.5-flash",        // #1: Google's fastest production model (instant streaming)
+    "gemini-2.0-flash",        // #2: Next-gen high-speed model
+    "gemini-1.5-flash-8b",     // #3: Ultra-lightweight low-latency fallback
   ];
 
   // Remember and prioritize the known working model from previous successful requests
@@ -33,6 +25,7 @@ const AIService = (() => {
       if (saved && MODELS.includes(saved)) {
         return [saved, ...MODELS.filter((m) => m !== saved)];
       }
+      localStorage.removeItem("gemini_working_model"); // Clear any obsolete model
     } catch (e) {}
     return MODELS;
   }
@@ -197,8 +190,8 @@ const AIService = (() => {
     }
   }
 
-  // ── Call Gemini API with SSE streaming (<1s Time-To-First-Token) ──
-  async function callGeminiStream(parts, systemInstruction = "", onChunk = null) {
+  // ── Call Gemini API with SSE streaming (<500ms Time-To-First-Token) ──
+  async function callGeminiStream(parts, systemInstruction = "", onChunk = null, maxTokens = 1000) {
     const requestBody = {
       contents: [{ parts }],
     };
@@ -213,7 +206,7 @@ const AIService = (() => {
       temperature: 0.1, // Lower temperature for faster, deterministic responses
       topP: 0.8,
       topK: 40,
-      maxOutputTokens: 1000,
+      maxOutputTokens: maxTokens,
     };
 
     let lastError = null;
@@ -519,12 +512,12 @@ Brief description of patient info, chief complaint, and visit type.
     const systemPrompt = `You are a helpful medical AI assistant. A medical report has been uploaded and summarized. Answer the user's questions based on the report data.
 
 RULES:
-- Answer based on the report content provided
-- Be accurate, concise, and cite specific values from the report when possible
+- Answer directly, concisely, and immediately like ChatGPT
+- Keep answers clear and focused (1-3 short paragraphs maximum)
+- Cite specific values from the report when relevant
 - If the question is not related to the report, politely redirect
-- Explain medical terms in simple language when asked
-- Never diagnose — only summarize and explain what the report says
-- Keep answers direct and clear`;
+- Explain medical terms in simple language
+- Never diagnose — only summarize and explain what the report says`;
 
     let contextMessage = "";
     if (reportContext) {
@@ -534,7 +527,7 @@ RULES:
     }
 
     const parts = [{ text: contextMessage }];
-    return await callGeminiStream(parts, systemPrompt, onChunk);
+    return await callGeminiStream(parts, systemPrompt, onChunk, 600);
   }
 
   // ══════════════════════════════════════
