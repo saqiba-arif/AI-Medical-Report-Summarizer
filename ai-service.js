@@ -7,22 +7,15 @@ const AIService = (() => {
   const PRIMARY_ENDPOINT = "/api/gemini";
   const BACKUP_ENDPOINT = "/api/gemini-backup";
 
-  // Exactly 3 ultra-fast, modern production models
+  // Models: #1 Gemini 3.8 Flash followed by latest high-speed models
   const MODELS = [
-    "gemini-2.5-flash",        // #1: Google's newest 2026 ultra-fast model (<500ms TTFT)
-    "gemini-2.0-flash",        // #2: Next-gen high-speed production model
-    "gemini-1.5-flash",        // #3: Proven universal ultra-fast fallback
+    "gemini-3.8-flash",        // #1: Gemini 3.8 Flash (User primary priority)
+    "gemini-2.5-flash",        // #2: Next-generation high-speed model
+    "gemini-2.0-flash",        // #3: Fast modern production model
+    "gemini-1.5-flash",        // #4: Universal ultra-fast fallback
   ];
 
-  // Remember and prioritize the known working model from previous successful requests
   function getOrderedModels() {
-    try {
-      const saved = localStorage.getItem("gemini_working_model");
-      if (saved && MODELS.includes(saved)) {
-        return [saved, ...MODELS.filter((m) => m !== saved)];
-      }
-      localStorage.removeItem("gemini_working_model");
-    } catch (e) {}
     return MODELS;
   }
 
@@ -175,7 +168,7 @@ const AIService = (() => {
       console.log(`🤖 Requesting model: ${model}...`);
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8500); // 8.5s hard limit
+      const timeoutId = setTimeout(() => controller.abort(), 5500); // 5.5s fast limit
 
       try {
         const response = await fetch(PRIMARY_ENDPOINT, {
