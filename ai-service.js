@@ -7,12 +7,15 @@ const AIService = (() => {
   const PRIMARY_ENDPOINT = "/api/gemini";
   const BACKUP_ENDPOINT = "/api/gemini-backup";
 
-  // Models: #1 Gemini 3.8 Flash followed by latest high-speed models
+  // Models: User models prioritized, backed by ultra-fast fallbacks
   const MODELS = [
-    "gemini-3.8-flash",        // #1: Gemini 3.8 Flash (User primary priority)
-    "gemini-2.5-flash",        // #2: Next-generation high-speed model
-    "gemini-2.0-flash",        // #3: Fast modern production model
-    "gemini-1.5-flash",        // #4: Universal ultra-fast fallback
+    "gemini-3.8-flash",            // #1: User primary model
+    "gemini-3.5-transcribe",       // #2: User transcribe model
+    "gemini-3.1-flash-image",      // #3: User image model
+    "gemini-3.5-transcribe-live",  // #4: User live transcribe model
+    "gemini-2.5-flash",            // #5: Next-gen high-speed fallback (<500ms)
+    "gemini-2.0-flash",            // #6: Fast production fallback
+    "gemini-1.5-flash",            // #7: Universal ultra-fast fallback
   ];
 
   function getOrderedModels() {
