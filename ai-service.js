@@ -13,13 +13,13 @@ const AIService = (() => {
   // Model configuration — fallback chain (tries each in order)
   const MODELS = [
     "gemini-3.8-flash",        // Latest GA — fastest & most capable
-    "gemini-3.5-flash",        // Frontier intelligence fallback
-    "gemini-3.5-flash-lite",   // Efficient high-volume fallback
+    "gemini-3.5-flash-lite",        // Frontier intelligence fallback
+    "gemini-3.1-flash-lite",   // Efficient high-volume fallback
   ];
 
-  // Retry configuration
-  const MAX_RETRIES = 3;
-  const BASE_DELAY_MS = 2000; // 2 seconds initial delay
+  // Retry configuration — optimized for fast response
+  const MAX_RETRIES = 2;
+  const BASE_DELAY_MS = 800; // 800ms fast retry delay
 
   // Store report context for chatbot
   let reportContext = "";
@@ -53,9 +53,45 @@ const AIService = (() => {
     return await file.text();
   }
 
-  // ── Convert file to base64 ──
+  // ── Convert file to base64 (with fast client-side image compression for speed) ──
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
+      // If it's an image, resize it client-side to speed up upload & AI latency
+      if (file.type && file.type.startsWith("image/") && file.type !== "image/gif") {
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          img.onload = () => {
+            const maxDim = 1600;
+            let { width, height } = img;
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+            resolve(dataUrl.split(",")[1]);
+          };
+          img.onerror = () => {
+            resolve(e.target.result.split(",")[1]);
+          };
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      // PDFs and text documents
       const reader = new FileReader();
       reader.onload = () => {
         const base64 = reader.result.split(",")[1];
@@ -70,9 +106,9 @@ const AIService = (() => {
   function getGeminiMimeType(file) {
     const type = file.type;
     if (type === "application/pdf") return "application/pdf";
-    if (type === "image/png") return "image/png";
+    if (type === "image/png") return "image/jpeg"; // Sent as compressed JPEG
     if (type === "image/jpeg" || type === "image/jpg") return "image/jpeg";
-    if (type === "image/webp") return "image/webp";
+    if (type === "image/webp") return "image/jpeg";
     if (type === "image/gif") return "image/gif";
     return "application/octet-stream";
   }
@@ -95,10 +131,10 @@ const AIService = (() => {
     }
 
     requestBody.generationConfig = {
-      temperature: 0.3,
+      temperature: 0.2,
       topP: 0.8,
       topK: 40,
-      maxOutputTokens: 4096,
+      maxOutputTokens: 2048, // Reduced for much faster output generation
     };
 
     let lastError = null;
@@ -121,7 +157,7 @@ const AIService = (() => {
             const errorMsg = errorData?.error?.message || `API error: ${response.status}`;
             const status = response.status;
 
-            // Rate limit or overload — retry same model
+            // Rate limit or overload — retry same model with quick backoff
             if ((status === 429 || status === 503) && attempt < MAX_RETRIES) {
               const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
               console.log(`⏳ ${model} busy (${status}). Retrying in ${delay / 1000}s... (attempt ${attempt}/${MAX_RETRIES})`);
@@ -130,14 +166,13 @@ const AIService = (() => {
               continue;
             }
 
-            // Model not found or unavailable — skip to next model
+            // Model not found or unavailable — skip to next model immediately
             if (status === 404 || status === 400) {
               console.log(`⚠️ ${model} unavailable (${status}). Trying next model...`);
               lastError = new Error(errorMsg);
-              break; // Break retry loop, try next model
+              break;
             }
 
-            // Rate limit on last attempt — try next model
             if (status === 429 || status === 503) {
               console.log(`⚠️ ${model} still overloaded. Trying next model...`);
               lastError = new Error(errorMsg);
@@ -159,7 +194,6 @@ const AIService = (() => {
         } catch (error) {
           lastError = error;
 
-          // Network errors — retry
           if (error.name === "TypeError" && attempt < MAX_RETRIES) {
             const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
             console.log(`🔄 Network error. Retrying in ${delay / 1000}s...`);
@@ -167,7 +201,6 @@ const AIService = (() => {
             continue;
           }
 
-          // If all retries exhausted for this model, break to try next
           if (attempt >= MAX_RETRIES) {
             console.log(`❌ ${model} failed after ${MAX_RETRIES} attempts. Trying next model...`);
             break;
@@ -190,7 +223,7 @@ const AIService = (() => {
     const systemPrompt = `You are an expert medical report analyzer. Your job is to read medical reports and provide clear, structured summaries for healthcare professionals.
 
 IMPORTANT RULES:
-- Be accurate and professional
+- Be accurate, concise, and professional
 - Highlight critical/abnormal values
 - Use clear medical terminology with plain language explanations
 - If you cannot read or understand part of the report, say so
@@ -220,6 +253,7 @@ Brief description of patient info, chief complaint, and visit type.
 
     const textContent = await extractTextFromFile(file);
     let parts = [];
+    let base64Data = null;
 
     if (textContent) {
       // Text-based file
@@ -227,7 +261,7 @@ Brief description of patient info, chief complaint, and visit type.
       reportContext = textContent;
     } else {
       // PDF or Image - send as inline data
-      const base64Data = await fileToBase64(file);
+      base64Data = await fileToBase64(file);
       const mimeType = getGeminiMimeType(file);
       parts = [
         { text: "Please analyze this medical report and provide a structured summary:" },
@@ -238,30 +272,36 @@ Brief description of patient info, chief complaint, and visit type.
           },
         },
       ];
-      // For chatbot context, we'll ask Gemini to extract text separately
-      reportContext = `[Medical report from file: ${file.name}. The report was analyzed by AI. Please refer to the summary for context.]`;
+      // Immediately set initial context to avoid delay
+      reportContext = `[Medical report from file: ${file.name}]`;
     }
 
+    // Single fast API call to summarize
     const summary = await callGemini(parts, systemPrompt);
 
-    // If we sent a file (not text), extract the text context for chatbot
-    if (!textContent) {
-      try {
-        const extractParts = [
-          { text: "Extract ALL text content from this medical report. Return only the raw text, no formatting:" },
-          {
-            inlineData: {
-              mimeType: getGeminiMimeType(file),
-              data: await fileToBase64(file),
-            },
+    // Set summary as chatbot context immediately so the user doesn't wait
+    reportContext = summary;
+
+    // Asynchronously extract deeper raw text in background (non-blocking)
+    if (!textContent && base64Data) {
+      const mimeType = getGeminiMimeType(file);
+      const extractParts = [
+        { text: "Extract ALL raw text content from this medical report. Return only the text:" },
+        {
+          inlineData: {
+            mimeType: mimeType,
+            data: base64Data,
           },
-        ];
-        const extracted = await callGemini(extractParts);
-        reportContext = extracted;
-      } catch (e) {
-        // Use summary as context if extraction fails
-        reportContext = summary;
-      }
+        },
+      ];
+      // Run in background without await so UI returns instantly
+      callGemini(extractParts)
+        .then((extracted) => {
+          if (extracted) reportContext = extracted;
+        })
+        .catch(() => {
+          // Keep summary as context
+        });
     }
 
     return summary;

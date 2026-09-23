@@ -193,9 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
       clearInterval(loadingInterval);
       loadingBarFill.style.width = "100%";
 
-      // Short delay for the bar to fill
-      await new Promise((r) => setTimeout(r, 400));
-
       showSummary(summary);
 
       // Update chat status
