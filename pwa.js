@@ -8,7 +8,7 @@ let deferredPrompt = null;
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('/sw.js', { scope: '/' })
+      .register('sw.js')
       .then((reg) => {
         console.log('PWA: Service Worker registered with scope:', reg.scope);
       })

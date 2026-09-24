@@ -1,3 +1,12 @@
+---
+title: AI Medical Report Summarizer
+emoji: 🏥
+colorFrom: blue
+colorTo: indigo
+sdk: static
+pinned: false
+---
+
 # 🏥 AI Medical Report Summarizer
 
 An intelligent medical report analyzer powered by Google's Gemini AI. Upload medical reports (PDF, images, text files) and get instant AI-generated summaries with key findings, risk alerts, and recommendations.

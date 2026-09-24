@@ -13,16 +13,16 @@
     <link rel="stylesheet" href="dashboard.css" />
 
     <!-- PWA Settings -->
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#070b14" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="AI Medical" />
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
-    <link rel="shortcut icon" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+    <link rel="shortcut icon" href="favicon.png" />
   </head>
   <body>
     <div class="dashboard-shell">
@@ -115,8 +115,13 @@
         <div class="api-key-banner" id="apiKeyBanner">
           <div class="banner-icon">🔑</div>
           <div class="banner-content">
-            <strong>Gemini API Key Required</strong>
-            <p>Open <code>ai-service.js</code> and paste your free API key from <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a></p>
+            <strong>Groq API Key Required</strong>
+            <p>Open <code>ai-service.js</code> (Line 10) and paste your key, or paste it directly below:</p>
+            <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <input type="password" id="bannerApiKeyInput" placeholder="gsk_..." style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 7px 12px; color: #fff; font-size: 0.85rem; width: 260px;" />
+              <button id="bannerSaveKeyBtn" type="button" class="mini-btn" style="padding: 7px 14px; font-size: 0.85rem; background: #38bdf8; color: #020617; font-weight: 700; border-radius: 8px; cursor: pointer; border: none;">Save Key</button>
+              <a href="https://console.groq.com/keys" target="_blank" rel="noopener" style="font-size: 0.85rem; color: #38bdf8; text-decoration: underline;">Get free Groq key ↗</a>
+            </div>
           </div>
           <button class="banner-close" id="closeBanner" type="button">✕</button>
         </div>
@@ -251,8 +256,8 @@
       </form>
     </aside>
 
-    <script src="ai-service.js"></script>
-    <script src="dashboard.js"></script>
-    <script src="pwa.js"></script>
+    <script src="ai-service.js?v=2.1"></script>
+    <script src="dashboard.js?v=2.1"></script>
+    <script src="pwa.js?v=2.1"></script>
   </body>
 </html>

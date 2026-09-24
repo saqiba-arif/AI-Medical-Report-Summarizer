@@ -2,11 +2,11 @@
    AI Medical Report Summarizer - Service Worker
    ═══════════════════════════════════════════ */
 
-const CACHE_NAME = 'ai-medical-v3';
+const CACHE_NAME = 'ai-medical-v4';
 const CORE_ASSETS = [
-  '/',
-  '/?source=pwa',
+  './',
   'index.html',
+  'index.html?source=pwa',
   'login.html',
   'signup.html',
   'dashboard.html',

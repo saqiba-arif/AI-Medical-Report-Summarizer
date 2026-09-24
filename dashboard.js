@@ -46,10 +46,26 @@ document.addEventListener("DOMContentLoaded", () => {
   // ══════════════════════════════════
   // API Key Banner
   // ══════════════════════════════════
+  const bannerApiKeyInput = document.getElementById("bannerApiKeyInput");
+  const bannerSaveKeyBtn = document.getElementById("bannerSaveKeyBtn");
+
   if (apiKeyBanner) {
     if (AIService.isConfigured()) {
       apiKeyBanner.style.display = "none";
     }
+  }
+
+  if (bannerSaveKeyBtn && bannerApiKeyInput) {
+    bannerSaveKeyBtn.addEventListener("click", () => {
+      const val = bannerApiKeyInput.value.trim();
+      if (!val) {
+        alert("Please enter a valid Groq API key (starts with gsk_...)");
+        return;
+      }
+      AIService.setApiKey(val);
+      apiKeyBanner.style.display = "none";
+      alert("✅ Groq API Key successfully saved!");
+    });
   }
 
   if (closeBanner) {
@@ -162,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function analyzeReport(file) {
     if (!AIService.isConfigured()) {
-      showError("API key not configured. Open ai-service.js and paste your Gemini API key.");
+      showError("API key not configured. Open ai-service.js and paste your Groq API key.");
       return;
     }
 
@@ -447,7 +463,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Send chat message with live token streaming
   async function sendChatMessage(message) {
     if (!AIService.isConfigured()) {
-      appendBotMessage("⚠️ API key not configured. Please open <code>ai-service.js</code> and paste your Gemini API key.");
+      appendBotMessage("⚠️ API key not configured. Please open <code>ai-service.js</code> and paste your Groq API key.");
       return;
     }
 
