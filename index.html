@@ -27,6 +27,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
     <link rel="shortcut icon" href="favicon.png" />
+    <script src="pwa.js" defer></script>
   </head>
   <body>
     <!-- ════════ HEADER ════════ -->
@@ -474,7 +475,7 @@
           <div class="app-install-card">
             <div class="app-install-left">
               <div class="app-install-icon-wrap">
-                <img src="/icons/icon-192.png" alt="AI Medical App Icon" class="app-install-logo" />
+                <img src="icons/icon-192.png" alt="AI Medical App Icon" class="app-install-logo" />
               </div>
               <div class="app-install-info">
                 <span class="app-install-badge">📱 Mobile App Available</span>
@@ -526,18 +527,30 @@
     </footer>
 
     <script src="script.js"></script>
-    <script src="pwa.js"></script>
 
     <!-- PWA Install Guidance Modal -->
     <div class="pwa-modal-overlay" id="pwaInstallModal" role="dialog" aria-modal="true" aria-labelledby="pwaModalTitle">
       <div class="pwa-modal">
         <button class="pwa-modal-close" id="pwaModalClose" aria-label="Close modal">&times;</button>
         <div class="pwa-modal-header">
-          <img src="/icons/icon-192.png" alt="App Icon" class="pwa-modal-icon" />
+          <img src="icons/icon-192.png" alt="App Icon" class="pwa-modal-icon" />
           <div>
             <h3 class="pwa-modal-title" id="pwaModalTitle">AI Medical Summarizer</h3>
             <p class="pwa-modal-subtitle">Ready to install on your phone</p>
           </div>
+        </div>
+
+        <!-- Iframe / Hugging Face Direct Link Guidance -->
+        <div class="pwa-step-card" id="pwaStepIframe" style="display:none; border: 1px solid #3b82f6; background: rgba(59, 130, 246, 0.12);">
+          <div class="pwa-step-title" style="color: #60a5fa;">
+            <span>📱 Direct App Installation</span>
+          </div>
+          <p style="font-size: 0.88rem; color: #cbd5e1; margin-bottom: 12px; line-height: 1.5;">
+            Android Chrome preview window ke andar se direct install allow nahi karta. App ko phone mein baki apps k sath install karne k liye direct Chrome mein open karein:
+          </p>
+          <a href="https://saqiba-arif.github.io/AI-Medical-Report-Summarizer/" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="display:inline-flex; justify-content:center; align-items:center; gap:8px; width:100%; text-decoration:none; padding:12px; font-weight:600; border-radius:10px; box-sizing:border-box;">
+            <span>🚀 Open in Chrome & Install</span>
+          </a>
         </div>
 
         <div class="pwa-step-card" id="pwaStepAndroid">

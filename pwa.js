@@ -4,7 +4,17 @@
 
 let deferredPrompt = null;
 
-// ── 1. Register Service Worker ──
+// ── 1. Early capture of beforeinstallprompt ──
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent Chrome from showing its mini-infobar automatically
+  e.preventDefault();
+  // Stash the event so the install button can trigger it
+  deferredPrompt = e;
+  console.log('PWA: Install prompt captured successfully');
+  updateInstallButtons(true);
+});
+
+// ── 2. Register Service Worker ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
@@ -18,20 +28,12 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// ── 2. Capture beforeinstallprompt ──
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  console.log('PWA: Install prompt captured');
-  updateInstallButtons(true);
-});
-
+// ── 3. App Installed Event Listener ──
 window.addEventListener('appinstalled', () => {
-  console.log('PWA: App successfully installed!');
+  console.log('PWA: App successfully installed to device!');
   deferredPrompt = null;
-  const modal = document.getElementById('pwaInstallModal');
-  if (modal) modal.classList.remove('active');
-  alert('🎉 AI Medical Report Summarizer has been installed on your device!');
+  closePwaModal();
+  alert('🎉 AI Medical Report Summarizer aap ke phone mein kamyabi se install ho chuki hai! Ab ya aap k phone ki baqi apps k sath show hogi.');
 });
 
 function updateInstallButtons(isReady) {
@@ -41,27 +43,60 @@ function updateInstallButtons(isReady) {
   });
 }
 
-// ── 3. Handle Install Click ──
+// ── 4. Handle Install Click ──
 function triggerPwaInstall() {
+  // Check if already running inside installed standalone app
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (isStandalone) {
+    alert('✅ AI Medical Report Summarizer pehle se aap ke phone mein install hai!');
+    return;
+  }
+
+  // Check if inside Hugging Face or any iframe
+  const isIframe = window.self !== window.top;
+
+  // If native prompt is ready (direct access on Android Chrome/Edge), prompt immediately!
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((choiceResult) => {
       console.log('User install choice:', choiceResult.outcome);
       if (choiceResult.outcome === 'accepted') {
         deferredPrompt = null;
+        closePwaModal();
       }
     });
-  } else {
-    // If native prompt is not available, show guide modal
-    openPwaModal();
+    return;
   }
+
+  // If inside iframe or prompt is not yet ready, open modal
+  openPwaModal(isIframe);
 }
 
-function openPwaModal() {
+function openPwaModal(isIframe) {
   const modal = document.getElementById('pwaInstallModal');
-  if (modal) {
-    modal.classList.add('active');
+  if (!modal) return;
+
+  const iframeCard = document.getElementById('pwaStepIframe');
+  const androidCard = document.getElementById('pwaStepAndroid');
+  const iosCard = document.getElementById('pwaStepIos');
+
+  if (isIframe && iframeCard) {
+    iframeCard.style.display = 'block';
+  } else if (iframeCard) {
+    iframeCard.style.display = 'none';
   }
+
+  // Detect iOS and style accordingly
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  if (isIOS) {
+    if (iosCard) iosCard.style.borderColor = 'rgba(6, 214, 160, 0.4)';
+    if (androidCard) androidCard.style.opacity = '0.6';
+  } else {
+    if (androidCard) androidCard.style.borderColor = 'rgba(59, 130, 246, 0.6)';
+    if (iosCard) iosCard.style.opacity = '0.6';
+  }
+
+  modal.classList.add('active');
 }
 
 function closePwaModal() {
@@ -71,34 +106,39 @@ function closePwaModal() {
   }
 }
 
-// ── 4. Setup Event Listeners on DOM Load ──
-document.addEventListener('DOMContentLoaded', () => {
+// ── 5. Setup Event Listeners on DOM Load ──
+function initPwaButtons() {
   const installButtons = document.querySelectorAll('#mainInstallBtn, [data-pwa-install]');
   installButtons.forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      triggerPwaInstall();
-    });
+    btn.removeEventListener('click', triggerPwaInstallHandler);
+    btn.addEventListener('click', triggerPwaInstallHandler);
   });
 
   const modalCloseBtn = document.getElementById('pwaModalClose');
   if (modalCloseBtn) {
+    modalCloseBtn.removeEventListener('click', closePwaModal);
     modalCloseBtn.addEventListener('click', closePwaModal);
   }
 
   const modalOverlay = document.getElementById('pwaInstallModal');
   if (modalOverlay) {
-    modalOverlay.addEventListener('click', (e) => {
-      if (e.target === modalOverlay) closePwaModal();
-    });
+    modalOverlay.removeEventListener('click', modalOverlayClickHandler);
+    modalOverlay.addEventListener('click', modalOverlayClickHandler);
   }
+}
 
-  // Detect iOS and highlight iPhone steps
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  if (isIOS) {
-    const iosCard = document.getElementById('pwaStepIos');
-    const androidCard = document.getElementById('pwaStepAndroid');
-    if (iosCard) iosCard.style.borderColor = 'rgba(6, 214, 160, 0.4)';
-    if (androidCard) androidCard.style.opacity = '0.7';
-  }
-});
+function triggerPwaInstallHandler(e) {
+  e.preventDefault();
+  triggerPwaInstall();
+}
+
+function modalOverlayClickHandler(e) {
+  const modalOverlay = document.getElementById('pwaInstallModal');
+  if (e.target === modalOverlay) closePwaModal();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPwaButtons);
+} else {
+  initPwaButtons();
+}

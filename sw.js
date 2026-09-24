@@ -2,7 +2,7 @@
    AI Medical Report Summarizer - Service Worker
    ═══════════════════════════════════════════ */
 
-const CACHE_NAME = 'ai-medical-v4';
+const CACHE_NAME = 'ai-medical-v5';
 const CORE_ASSETS = [
   './',
   'index.html',
@@ -92,7 +92,7 @@ self.addEventListener('fetch', (event) => {
         .catch(() => {
           // If network is offline, serve cached page or fallback to index.html
           return caches.match(req).then((cached) => {
-            return cached || caches.match('/index.html') || caches.match('/');
+            return cached || caches.match('./index.html') || caches.match('index.html') || caches.match('./');
           });
         })
     );
@@ -123,7 +123,7 @@ self.addEventListener('fetch', (event) => {
       }).catch(() => {
         // Fallback for missing images
         if (req.destination === 'image') {
-          return caches.match('/icons/icon-192.png');
+          return caches.match('icons/icon-192.png');
         }
       });
     })
