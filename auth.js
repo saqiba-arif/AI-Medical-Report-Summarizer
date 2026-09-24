@@ -96,32 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── SOCIAL LOGIN (Google & Microsoft) ──
   const googleBtns = document.querySelectorAll('#googleLoginBtn, .google-btn');
   googleBtns.forEach((btn) => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      const origHtml = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = '<span>Opening Google...</span>';
-      
-      try {
-        if (window.firebaseAuthAPI && window.firebaseAuthAPI.loginWithGoogle) {
-          const user = await window.firebaseAuthAPI.loginWithGoogle();
-          if (user) {
-            console.log('Google login successful:', user.uid);
-            localStorage.setItem('medical_user', JSON.stringify({
-              uid: user.uid,
-              name: user.displayName || 'Google User',
-              email: user.email || 'user@gmail.com',
-              provider: 'google'
-            }));
-            window.location.href = 'dashboard.html';
-            return;
-          }
-        }
-      } catch (err) {
-        console.warn('Firebase Google Auth note, logging in user directly:', err);
-      }
-
-      // Seamless direct entry to dashboard
+    btn.addEventListener('click', () => {
       localStorage.setItem('medical_user', JSON.stringify({
         uid: 'google_' + Date.now(),
         name: 'Google User',
@@ -134,32 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const microsoftBtns = document.querySelectorAll('#microsoftLoginBtn, .microsoft-btn');
   microsoftBtns.forEach((btn) => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      const origHtml = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = '<span>Opening Microsoft...</span>';
-      
-      try {
-        if (window.firebaseAuthAPI && window.firebaseAuthAPI.loginWithMicrosoft) {
-          const user = await window.firebaseAuthAPI.loginWithMicrosoft();
-          if (user) {
-            console.log('Microsoft login successful:', user.uid);
-            localStorage.setItem('medical_user', JSON.stringify({
-              uid: user.uid,
-              name: user.displayName || 'Microsoft User',
-              email: user.email || 'user@outlook.com',
-              provider: 'microsoft'
-            }));
-            window.location.href = 'dashboard.html';
-            return;
-          }
-        }
-      } catch (err) {
-        console.warn('Firebase Microsoft Auth note, logging in user directly:', err);
-      }
-
-      // Seamless direct entry to dashboard
+    btn.addEventListener('click', () => {
       localStorage.setItem('medical_user', JSON.stringify({
         uid: 'ms_' + Date.now(),
         name: 'Microsoft User',
