@@ -33,7 +33,7 @@ window.addEventListener('appinstalled', () => {
   console.log('PWA: App successfully installed to device!');
   deferredPrompt = null;
   closePwaModal();
-  alert('🎉 AI Medical Report Summarizer aap ke phone mein kamyabi se install ho chuki hai! Ab ya aap k phone ki baqi apps k sath show hogi.');
+  alert('🎉 App successfully installed!');
 });
 
 function updateInstallButtons(isReady) {
@@ -48,7 +48,7 @@ function triggerPwaInstall() {
   // Check if already running inside installed standalone app
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   if (isStandalone) {
-    alert('✅ AI Medical Report Summarizer pehle se aap ke phone mein install hai!');
+    alert('✅ App is already installed on your device!');
     return;
   }
 

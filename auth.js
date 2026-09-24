@@ -92,4 +92,71 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  // ── SOCIAL LOGIN (Google & Microsoft) ──
+  const googleBtns = document.querySelectorAll('#googleLoginBtn, .google-btn');
+  googleBtns.forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const origHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span>Connecting...</span>';
+      try {
+        if (!window.firebaseAuthAPI || !window.firebaseAuthAPI.loginWithGoogle) {
+          throw new Error('Google Sign-in service is not available. Please check connection.');
+        }
+        const user = await window.firebaseAuthAPI.loginWithGoogle();
+        if (user) {
+          console.log('Google login successful:', user.uid);
+          window.location.href = 'dashboard.html';
+        }
+      } catch (err) {
+        console.error('Google login error:', err);
+        if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+          return;
+        }
+        if (err.code === 'auth/unauthorized-domain') {
+          alert('Firebase Security Note: Domain (' + window.location.hostname + ') needs to be added in Firebase Console > Authentication > Settings > Authorized domains.');
+          return;
+        }
+        alert(getFriendlyError(err));
+      } finally {
+        btn.innerHTML = origHtml;
+        btn.disabled = false;
+      }
+    });
+  });
+
+  const microsoftBtns = document.querySelectorAll('#microsoftLoginBtn, .microsoft-btn');
+  microsoftBtns.forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const origHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span>Connecting...</span>';
+      try {
+        if (!window.firebaseAuthAPI || !window.firebaseAuthAPI.loginWithMicrosoft) {
+          throw new Error('Microsoft Sign-in service is not available. Please check connection.');
+        }
+        const user = await window.firebaseAuthAPI.loginWithMicrosoft();
+        if (user) {
+          console.log('Microsoft login successful:', user.uid);
+          window.location.href = 'dashboard.html';
+        }
+      } catch (err) {
+        console.error('Microsoft login error:', err);
+        if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+          return;
+        }
+        if (err.code === 'auth/unauthorized-domain') {
+          alert('Firebase Security Note: Domain (' + window.location.hostname + ') needs to be added in Firebase Console > Authentication > Settings > Authorized domains.');
+          return;
+        }
+        alert(getFriendlyError(err));
+      } finally {
+        btn.innerHTML = origHtml;
+        btn.disabled = false;
+      }
+    });
+  });
 });
