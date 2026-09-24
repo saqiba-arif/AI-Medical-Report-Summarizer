@@ -1715,18 +1715,31 @@ p { color: var(--text-secondary); }
     justify-content: center;
   }
 
+  .nav-actions {
+    gap: 6px;
+  }
+
   .header-signup-btn {
-    display: none;
+    display: inline-flex !important;
+    padding: 7px 12px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    border-radius: 9px !important;
+    background: var(--primary) !important;
+    color: #fff !important;
+    white-space: nowrap;
   }
 
   .header-login-btn {
     display: inline-flex !important;
-    padding: 8px 16px !important;
-    font-size: 0.88rem !important;
-    border-radius: 10px !important;
+    padding: 7px 12px !important;
+    font-size: 0.82rem !important;
+    font-weight: 500 !important;
+    border-radius: 9px !important;
     background: var(--surface) !important;
     border: 1px solid var(--border-light) !important;
     color: var(--text) !important;
+    white-space: nowrap;
   }
 
   .hero {
